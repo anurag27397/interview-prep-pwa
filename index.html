@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Interview Prep</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d1117">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+
+<body>
+    <div class="day-badge" id="day-badge">Day 1</div>
+
+    <div class="container">
+        <h1>Daily Interview Prep</h1>
+
+        <div class="card" id="task-card">
+            <span class="tag" id="task-type">Loading...</span>
+            <div class="topic-title">
+                <a href="#" id="task-link" target="_blank" class="topic-link">Wait for it...</a>
+            </div>
+
+            <div class="aha-box">
+                <span class="aha-label">The "Aha!" Moment</span>
+                <p class="aha-text" id="task-aha">Your daily wisdom will appear here.</p>
+            </div>
+        </div>
+
+        <div class="timer-section">
+            <div class="time-display" id="timer">30:00</div>
+            <div class="controls">
+                <button id="start-btn" class="primary">Start</button>
+                <button id="reset-btn">Reset</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>"Consistency is the key to mastery."</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { codingQuestions, systemDesignTopics } from './data.js';
+
+        // --- Logic Configuration ---
+        const START_DATE_KEY = 'interview_prep_start_date';
+        // Set this to a fixed date if you want everyone to have the same schedule, 
+        // or let it initialize on first run.
+        // For consistency, let's fix the anchor date to Feb 11, 2026 as Day 1.
+        const ANCHOR_DATE = new Date('2026-02-11T00:00:00');
+
+        function getDayNumber() {
+            const now = new Date();
+            // Reset time to midnight for accurate day calc
+            const startStr = localStorage.getItem(START_DATE_KEY);
+            let start;
+            if (startStr) {
+                start = new Date(startStr);
+            } else {
+                start = ANCHOR_DATE;
+                localStorage.setItem(START_DATE_KEY, start.toISOString());
+            }
+
+            const diffTime = Math.abs(now - start);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 ? diffDays : 1;
+        }
+
+        // --- Persistence Logic ---
+        const COMPLETION_KEY = 'interview_prep_log';
+
+        function loadCompletion() {
+            const log = localStorage.getItem(COMPLETION_KEY);
+            return log ? JSON.parse(log) : {};
+        }
+
+        function saveDayCompletion(day, isDone) {
+            const log = loadCompletion();
+            log[day] = isDone;
+            localStorage.setItem(COMPLETION_KEY, JSON.stringify(log));
+            render();
+        }
+
+        // --- Render Updates ---
+        function render() {
+            const day = getDayNumber();
+            document.getElementById('day-badge').textContent = `Day ${day}`;
+
+            const log = loadCompletion();
+            const isDone = log[day];
+
+            const task = getTaskForDay(day);
+            const typeLabel = document.getElementById('task-type');
+            const link = document.getElementById('task-link');
+            const aha = document.getElementById('task-aha');
+            const card = document.getElementById('task-card');
+            const markDoneBtn = document.getElementById('mark-done-btn');
+
+            if (isDone) {
+                card.style.opacity = '0.5';
+                if (markDoneBtn) {
+                    markDoneBtn.textContent = 'Completed ✅';
+                    markDoneBtn.classList.add('completed');
+                }
+            } else {
+                card.style.opacity = '1';
+                if (markDoneBtn) {
+                    markDoneBtn.textContent = 'Mark as Done';
+                    markDoneBtn.classList.remove('completed');
+                }
+            }
+
+            typeLabel.textContent = task.type;
+
+            if (task.type === 'Coding') {
+                typeLabel.className = 'tag coding';
+                link.href = task.link;
+                link.textContent = task.title;
+            } else {
+                typeLabel.className = 'tag system-design';
+                link.href = `https://www.google.com/search?q=${encodeURIComponent(task.title + " system design")}`;
+                link.textContent = task.title;
+            }
+
+            aha.textContent = task.aha;
+        }
+
+        function getTaskForDay(day) {
+            const isCodingDay = day % 2 !== 0;
+            if (isCodingDay) {
+                let index = Math.floor((day - 1) / 2);
+                index = index % codingQuestions.length;
+                return codingQuestions[index];
+            } else {
+                let index = (day / 2) - 1;
+                index = index % systemDesignTopics.length;
+                return systemDesignTopics[index];
+            }
+        }
+
+        // --- Timer Logic with Recovery ---
+        let timeLeft = 30 * 60;
+        let timerId = null;
+        const TIMER_END_KEY = 'interview_timer_end';
+
+        const timerEl = document.getElementById('timer');
+        const startBtn = document.getElementById('start-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function updateTimerUp() {
+            if (timeLeft < 0) timeLeft = 0;
+            timerEl.textContent = formatTime(timeLeft);
+        }
+
+        function checkTimerRecovery() {
+            const savedEnd = localStorage.getItem(TIMER_END_KEY);
+            if (savedEnd) {
+                const now = Date.now();
+                const diff = Math.ceil((parseInt(savedEnd) - now) / 1000);
+
+                if (diff > 0) {
+                    timeLeft = diff;
+                    startBtn.textContent = 'Pause';
+                    startTimerInterval();
+                } else {
+                    timeLeft = 0;
+                    startBtn.textContent = 'Done';
+                    localStorage.removeItem(TIMER_END_KEY);
+                }
+                updateTimerUp();
+            }
+        }
+
+        function startTimerInterval() {
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateTimerUp();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    startBtn.textContent = 'Done';
+                    localStorage.removeItem(TIMER_END_KEY);
+
+                    if (Notification.permission === 'granted') {
+                        new Notification("Time's Up!", { body: "Great job! Don't forget to mark as done." });
+                    }
+                }
+            }, 1000);
+        }
+
+        function toggleTimer() {
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+                startBtn.textContent = 'Start';
+                startBtn.className = 'primary';
+                localStorage.removeItem(TIMER_END_KEY);
+            } else {
+                if (timeLeft <= 0) return;
+                const now = Date.now();
+                const endTimestamp = now + (timeLeft * 1000);
+                localStorage.setItem(TIMER_END_KEY, endTimestamp.toString());
+
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+
+                startBtn.textContent = 'Pause';
+                startBtn.className = '';
+                startTimerInterval();
+            }
+        }
+
+        function resetTimer() {
+            if (timerId) clearInterval(timerId);
+            timerId = null;
+            timeLeft = 30 * 60;
+            localStorage.removeItem(TIMER_END_KEY);
+            updateTimerUp();
+            startBtn.textContent = 'Start';
+            startBtn.className = 'primary';
+        }
+
+        startBtn.addEventListener('click', toggleTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // --- Bottom Actions (Mark Done + Export/Import) ---
+        // Create wrapper for bottom actions
+        const actionWrapper = document.createElement('div');
+        actionWrapper.style.display = 'flex';
+        actionWrapper.style.flexDirection = 'column';
+        actionWrapper.style.gap = '10px';
+        actionWrapper.style.width = '100%';
+        actionWrapper.style.maxWidth = '300px';
+        actionWrapper.style.margin = '20px auto 0';
+
+        // Add Mark Done Button logic
+        const markDoneBtn = document.createElement('button');
+        markDoneBtn.id = 'mark-done-btn';
+        markDoneBtn.style.padding = '12px 20px';
+        markDoneBtn.style.borderRadius = '12px';
+        markDoneBtn.style.border = 'none';
+        markDoneBtn.style.background = '#238636';
+        markDoneBtn.style.color = '#fff';
+        markDoneBtn.style.cursor = 'pointer';
+        markDoneBtn.style.fontSize = '1rem';
+        markDoneBtn.style.fontWeight = '600';
+        markDoneBtn.style.width = '100%';
+        markDoneBtn.textContent = 'Mark as Done';
+
+        markDoneBtn.addEventListener('click', () => {
+            const day = getDayNumber();
+            const log = loadCompletion();
+            const newState = !log[day]; // Toggle
+            saveDayCompletion(day, newState);
+        });
+
+        // --- Data Management (Export/Import) ---
+        const dataContainer = document.createElement('div');
+        dataContainer.style.display = 'flex';
+        dataContainer.style.gap = '10px';
+        dataContainer.style.justifyContent = 'center';
+        dataContainer.style.marginTop = '10px';
+
+        const btnStyle = 'background: rgba(48, 54, 61, 0.5); border: 1px solid #30363d; color: #8b949e; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.8rem;';
+
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = 'Export Data';
+        exportBtn.style.cssText = btnStyle;
+        exportBtn.onclick = () => {
+            const data = {
+                log: loadCompletion(),
+                startDate: localStorage.getItem(START_DATE_KEY)
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `interview-prep-backup-${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+        };
+
+        const importInput = document.createElement('input');
+        importInput.type = 'file';
+        importInput.accept = '.json';
+        importInput.style.display = 'none';
+        importInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.log) localStorage.setItem(COMPLETION_KEY, JSON.stringify(data.log));
+                    if (data.startDate) localStorage.setItem(START_DATE_KEY, data.startDate);
+                    alert('Data imported successfully! reloading...');
+                    location.reload();
+                } catch (err) {
+                    alert('Invalid file format');
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        const importBtn = document.createElement('button');
+        importBtn.textContent = 'Import Data';
+        importBtn.style.cssText = btnStyle;
+        importBtn.onclick = () => importInput.click();
+
+        dataContainer.appendChild(exportBtn);
+        dataContainer.appendChild(importBtn);
+        dataContainer.appendChild(importInput);
+
+        actionWrapper.appendChild(markDoneBtn);
+        actionWrapper.appendChild(dataContainer);
+
+        // Insert wrapper before footer text
+        const footer = document.querySelector('.footer');
+        footer.insertBefore(actionWrapper, footer.firstChild);
+
+        // Init
+        checkTimerRecovery();
+        render(); // This now calls loadCompletion
+
+        // Service Worker Reg
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('SW Registered'))
+                .catch(e => console.log('SW Fail', e));
+        }
+    </script>
+</body>
+
+</html>
