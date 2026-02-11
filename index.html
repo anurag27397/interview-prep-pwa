@@ -27,7 +27,8 @@
 
             <div class="aha-box">
                 <span class="aha-label">The "Aha!" Moment</span>
-                <p class="aha-text" id="task-aha">Your daily wisdom will appear here.</p>
+                <button id="show-hint-btn" class="hint-btn">Show Hint 💡</button>
+                <p class="aha-text" id="task-aha" style="display: none;">Your daily wisdom will appear here.</p>
             </div>
         </div>
 
@@ -98,6 +99,7 @@
             const typeLabel = document.getElementById('task-type');
             const link = document.getElementById('task-link');
             const aha = document.getElementById('task-aha');
+            const showHintBtn = document.getElementById('show-hint-btn');
             const card = document.getElementById('task-card');
             const markDoneBtn = document.getElementById('mark-done-btn');
 
@@ -127,7 +129,21 @@
                 link.textContent = task.title;
             }
 
+            // AHA Logic - Hide by default
             aha.textContent = task.aha;
+            aha.style.display = 'none'; // Ensure hidden on re-render
+
+            if (showHintBtn) {
+                showHintBtn.style.display = 'inline-block';
+                // Remove old event listeners to prevent duplicates (not strictly necessary with this structure but good practice)
+                const newBtn = showHintBtn.cloneNode(true);
+                showHintBtn.parentNode.replaceChild(newBtn, showHintBtn);
+
+                newBtn.onclick = () => {
+                    aha.style.display = 'block';
+                    newBtn.style.display = 'none';
+                };
+            }
         }
 
         function getTaskForDay(day) {

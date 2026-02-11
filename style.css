@@ -181,3 +181,4 @@ h1 {
     color: #8b949e;
     border: 1px solid #30363d;
 }
+.hint-btn { background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 5px 10px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; margin-bottom: 5px; }
