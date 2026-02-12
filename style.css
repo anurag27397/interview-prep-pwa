@@ -171,9 +171,6 @@ h1 {
 
 /* Day Indicator */
 .day-badge {
-  position: absolute;
-  top: 20px;
-  right: 20px;
   background: #21262d;
   padding: 8px 16px;
   border-radius: 20px;
@@ -194,10 +191,15 @@ h1 {
 }
 
 /* History Feature */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 .history-trigger {
-  position: absolute;
-  top: 20px;
-  left: 20px;
   background: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-color);
