@@ -14,7 +14,19 @@
 </head>
 
 <body>
+    <button id="history-btn" class="history-trigger">History 📜</button>
     <div class="day-badge" id="day-badge">Day 1</div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>History</h2>
+            <ul id="history-list" class="history-list">
+                <!-- Items injected here -->
+            </ul>
+        </div>
+    </div>
 
     <div class="container">
         <h1>Daily Interview Prep</h1>
@@ -96,6 +108,10 @@
             const isDone = log[day];
 
             const task = getTaskForDay(day);
+
+            // Update History Modal if open (or just always for simplicity if cheap)
+            renderHistory();
+
             const typeLabel = document.getElementById('task-type');
             const link = document.getElementById('task-link');
             const aha = document.getElementById('task-aha');
@@ -343,9 +359,78 @@
         actionWrapper.appendChild(markDoneBtn);
         actionWrapper.appendChild(dataContainer);
 
+        actionWrapper.appendChild(dataContainer);
+
         // Insert wrapper before footer text
         const footer = document.querySelector('.footer');
         footer.insertBefore(actionWrapper, footer.firstChild);
+
+        // --- History Logic ---
+        const historyBtn = document.getElementById('history-btn');
+        const modal = document.getElementById('history-modal');
+        const closeBtn = document.querySelector('.close-btn');
+        const historyList = document.getElementById('history-list');
+
+        historyBtn.onclick = () => {
+            modal.style.display = "block";
+            renderHistory();
+        }
+
+        closeBtn.onclick = () => {
+            modal.style.display = "none";
+        }
+
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = '';
+            const currentDay = getDayNumber();
+            const log = loadCompletion();
+
+            for (let d = 1; d <= currentDay; d++) {
+                const task = getTaskForDay(d);
+                const isDone = log[d];
+
+                const li = document.createElement('li');
+                li.className = 'history-item';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'history-info';
+
+                const daySpan = document.createElement('span');
+                daySpan.className = 'history-day';
+                daySpan.textContent = `Day ${d} • ${task.type}`;
+
+                const titleLink = document.createElement('a');
+                titleLink.className = 'history-title';
+                titleLink.href = task.type === 'Coding' ? task.link : `https://www.google.com/search?q=${encodeURIComponent(task.title + " system design")}`;
+                titleLink.target = '_blank';
+                titleLink.textContent = task.title;
+                if (isDone) {
+                    titleLink.style.textDecoration = 'line-through';
+                    titleLink.style.opacity = '0.5';
+                }
+
+                infoDiv.appendChild(daySpan);
+                infoDiv.appendChild(titleLink);
+
+                const checkBox = document.createElement('input');
+                checkBox.type = 'checkbox';
+                checkBox.className = 'history-check';
+                checkBox.checked = !!isDone;
+                checkBox.onchange = () => {
+                    saveDayCompletion(d, checkBox.checked);
+                };
+
+                li.appendChild(infoDiv);
+                li.appendChild(checkBox);
+                historyList.appendChild(li);
+            }
+        }
 
         // Init
         checkTimerRecovery();
