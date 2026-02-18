@@ -1,9 +1,10 @@
-const CACHE_NAME = 'interview-prep-v2';
+const CACHE_NAME = 'interview-prep-v3';
 const ASSETS = [
     './',
     './index.html',
     './style.css',
     './data.js',
+    './firebase-sync.js',
     './manifest.json',
     './icons/icon-192.png'
 ];

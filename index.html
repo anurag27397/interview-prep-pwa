@@ -74,6 +74,7 @@
 
     <script type="module">
         import { codingQuestions, systemDesignTopics } from './data.js';
+        import { initSync, pushData, pullData, onDataChange, changeSyncCode, getSyncCode, uploadAllLocal } from './firebase-sync.js';
 
         // --- Logic Configuration ---
         const START_DATE_KEY = 'interview_prep_start_date';
@@ -89,37 +90,47 @@
             return diffDays > 0 ? diffDays : 1;
         }
 
-        // --- Persistence Logic ---
+        // --- Firebase Config ---
+        // TODO: Replace with your Firebase project config
+        const FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBrYa5yChiJP-m33NjeYzsrWhf0MH4Or6s",
+            authDomain: "interview-prep-20845.firebaseapp.com",
+            databaseURL: "https://interview-prep-20845-default-rtdb.firebaseio.com",
+            projectId: "interview-prep-20845",
+            storageBucket: "interview-prep-20845.firebasestorage.app",
+            messagingSenderId: "29704314538",
+            appId: "1:29704314538:web:8b280582b63dc7f664bad3"
+        };
+
+        // --- Persistence Logic (synced via Firebase) ---
         const COMPLETION_KEY = 'interview_prep_log';
+        const CUSTOM_TOPIC_KEY = 'interview_prep_custom_topics';
 
         function loadCompletion() {
             const log = localStorage.getItem(COMPLETION_KEY);
             return log ? JSON.parse(log) : {};
         }
 
-        function saveDayCompletion(day, isDone) {
+        async function saveDayCompletion(day, isDone) {
             const log = loadCompletion();
             log[day] = isDone;
-            localStorage.setItem(COMPLETION_KEY, JSON.stringify(log));
+            await pushData(COMPLETION_KEY, log);
             render();
         }
-
-        // --- Custom Topic Persistence ---
-        const CUSTOM_TOPIC_KEY = 'interview_prep_custom_topics';
 
         function loadCustomTopics() {
             const data = localStorage.getItem(CUSTOM_TOPIC_KEY);
             return data ? JSON.parse(data) : {};
         }
 
-        function saveCustomTopic(day, topic) {
+        async function saveCustomTopic(day, topic) {
             const topics = loadCustomTopics();
             if (topic) {
                 topics[day] = topic;
             } else {
                 delete topics[day];
             }
-            localStorage.setItem(CUSTOM_TOPIC_KEY, JSON.stringify(topics));
+            await pushData(CUSTOM_TOPIC_KEY, topics);
         }
 
         // --- Render Updates ---
@@ -520,9 +531,132 @@
             render();
         });
 
-        // Init
-        checkTimerRecovery();
-        render(); // This now calls loadCompletion
+        // --- Sync UI ---
+        function buildSyncUI() {
+            const syncSection = document.createElement('div');
+            syncSection.className = 'sync-section';
+
+            const code = getSyncCode() || '------';
+            syncSection.innerHTML = `
+                <div class="sync-box">
+                    <div class="sync-header">
+                        <span class="sync-label">☁️ Cloud Sync</span>
+                        <span class="sync-status" id="sync-status">
+                            <span class="dot offline" id="sync-dot"></span>
+                            <span id="sync-status-text">Connecting...</span>
+                        </span>
+                    </div>
+                    <div class="sync-code-row">
+                        <input type="text" class="sync-code-display" id="sync-code-input"
+                            value="${code}" maxlength="6" placeholder="Enter code"
+                            spellcheck="false" autocomplete="off">
+                        <button class="sync-copy-btn" id="sync-copy-btn" title="Copy code">📋</button>
+                        <button class="sync-link-btn" id="sync-link-btn" title="Link device">🔗</button>
+                    </div>
+                    <div class="sync-hint">Enter the same code on another device to sync</div>
+                </div>
+            `;
+
+            // Insert into the action wrapper in the footer
+            actionWrapper.appendChild(syncSection);
+
+            // Copy button
+            document.getElementById('sync-copy-btn').addEventListener('click', () => {
+                const input = document.getElementById('sync-code-input');
+                navigator.clipboard.writeText(input.value).then(() => {
+                    const btn = document.getElementById('sync-copy-btn');
+                    btn.textContent = '✅';
+                    setTimeout(() => btn.textContent = '📋', 1500);
+                });
+            });
+
+            // Link button — apply a new sync code from the input
+            document.getElementById('sync-link-btn').addEventListener('click', async () => {
+                const input = document.getElementById('sync-code-input');
+                const newCode = input.value.toUpperCase().trim();
+                if (newCode.length !== 6) {
+                    alert('Sync code must be 6 characters');
+                    return;
+                }
+
+                // Upload current local data to the new sync path first
+                changeSyncCode(newCode);
+                await uploadAllLocal([COMPLETION_KEY, CUSTOM_TOPIC_KEY]);
+
+                // Pull remote data (merge)
+                await pullData(COMPLETION_KEY);
+                await pullData(CUSTOM_TOPIC_KEY);
+
+                // Re-register listeners
+                setupRealtimeListeners();
+                render();
+
+                const btn = document.getElementById('sync-link-btn');
+                btn.textContent = '✅';
+                btn.classList.add('active');
+                setTimeout(() => {
+                    btn.textContent = '🔗';
+                    btn.classList.remove('active');
+                }, 2000);
+            });
+        }
+
+        function updateSyncStatus(status) {
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-status-text');
+            const input = document.getElementById('sync-code-input');
+            if (!dot || !text) return;
+
+            if (status.online) {
+                dot.className = 'dot online';
+                text.textContent = 'Synced';
+                text.style.color = '#3fb950';
+            } else {
+                dot.className = 'dot offline';
+                text.textContent = 'Offline';
+                text.style.color = '#f85149';
+            }
+
+            if (status.code && input) {
+                input.value = status.code;
+            }
+        }
+
+        function setupRealtimeListeners() {
+            onDataChange(COMPLETION_KEY, (data) => {
+                // Remote change came in — update local and re-render
+                render();
+            });
+            onDataChange(CUSTOM_TOPIC_KEY, (data) => {
+                render();
+            });
+        }
+
+        // --- Init ---
+        async function initApp() {
+            checkTimerRecovery();
+            render();
+            buildSyncUI();
+
+            // Initialize Firebase
+            const hasConfig = FIREBASE_CONFIG.apiKey !== 'YOUR_API_KEY';
+            if (hasConfig) {
+                const code = initSync(FIREBASE_CONFIG, updateSyncStatus);
+                if (code) {
+                    // Pull remote data on startup
+                    await pullData(COMPLETION_KEY);
+                    await pullData(CUSTOM_TOPIC_KEY);
+                    setupRealtimeListeners();
+                    render();
+                }
+            } else {
+                updateSyncStatus({ online: false, code: getSyncCode() || '------' });
+                const hint = document.querySelector('.sync-hint');
+                if (hint) hint.textContent = 'Add Firebase config to enable sync';
+            }
+        }
+
+        initApp();
 
         // Service Worker Reg
         if ('serviceWorker' in navigator) {

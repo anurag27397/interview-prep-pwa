@@ -413,3 +413,120 @@ h1 {
   background: #30363d;
   border-radius: 4px;
 }
+
+/* Sync Section */
+.sync-section {
+  width: 100%;
+  max-width: 300px;
+  margin: 12px auto 0;
+}
+
+.sync-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.sync-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.sync-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8b949e;
+  font-weight: 600;
+}
+
+.sync-status {
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sync-status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sync-status .dot.online {
+  background: #3fb950;
+  box-shadow: 0 0 6px rgba(63, 185, 80, 0.6);
+}
+
+.sync-status .dot.offline {
+  background: #f85149;
+  box-shadow: 0 0 6px rgba(248, 81, 73, 0.4);
+}
+
+.sync-code-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.sync-code-display {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: 3px;
+  text-align: center;
+}
+
+.sync-code-display::placeholder {
+  color: #484f58;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 0.8rem;
+}
+
+.sync-copy-btn,
+.sync-link-btn {
+  background: rgba(48, 54, 61, 0.5);
+  border: 1px solid var(--border-color);
+  color: #8b949e;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sync-copy-btn:hover,
+.sync-link-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+.sync-link-btn.active {
+  border-color: #3fb950;
+  color: #3fb950;
+  background: rgba(63, 185, 80, 0.1);
+}
+
+.sync-hint {
+  font-size: 0.65rem;
+  color: #484f58;
+  margin-top: 8px;
+  text-align: center;
+  line-height: 1.4;
+}
