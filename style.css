@@ -15,14 +15,21 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
   font-family: var(--font-family);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100%;
   padding: 20px;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
