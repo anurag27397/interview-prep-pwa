@@ -84,17 +84,7 @@
 
         function getDayNumber() {
             const now = new Date();
-            // Reset time to midnight for accurate day calc
-            const startStr = localStorage.getItem(START_DATE_KEY);
-            let start;
-            if (startStr) {
-                start = new Date(startStr);
-            } else {
-                start = ANCHOR_DATE;
-                localStorage.setItem(START_DATE_KEY, start.toISOString());
-            }
-
-            const diffTime = Math.abs(now - start);
+            const diffTime = Math.abs(now - ANCHOR_DATE);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays > 0 ? diffDays : 1;
         }
