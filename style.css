@@ -190,6 +190,105 @@ h1 {
   margin-bottom: 5px;
 }
 
+/* Custom Topic Section */
+.custom-topic-section {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.custom-topic-box {
+  background: var(--card-bg);
+  border: 1px dashed rgba(235, 77, 255, 0.3);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  backdrop-filter: blur(10px);
+}
+
+.custom-topic-box.coding-variant {
+  border-color: rgba(56, 139, 253, 0.3);
+}
+
+.custom-topic-box.coding-variant .custom-topic-label {
+  color: #58a6ff;
+}
+
+.custom-topic-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #db6dff;
+  display: block;
+  margin-bottom: 0.6rem;
+  font-weight: 600;
+}
+
+.custom-topic-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.custom-topic-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.custom-topic-input:focus {
+  border-color: #db6dff;
+  box-shadow: 0 0 10px rgba(235, 77, 255, 0.2);
+}
+
+.custom-topic-input::placeholder {
+  color: #484f58;
+}
+
+.set-topic-btn {
+  background: rgba(235, 77, 255, 0.15);
+  border: 1px solid rgba(235, 77, 255, 0.4);
+  color: #db6dff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.set-topic-btn:hover {
+  background: rgba(235, 77, 255, 0.25);
+  box-shadow: 0 0 12px rgba(235, 77, 255, 0.3);
+}
+
+.clear-topic-btn {
+  background: rgba(255, 77, 77, 0.15);
+  border: 1px solid rgba(255, 77, 77, 0.4);
+  color: #ff6b6b;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.clear-topic-btn:hover {
+  background: rgba(255, 77, 77, 0.25);
+  box-shadow: 0 0 12px rgba(255, 77, 77, 0.3);
+}
+
 /* History Feature */
 .app-header {
   display: flex;

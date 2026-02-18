@@ -46,6 +46,19 @@
             </div>
         </div>
 
+        <!-- Custom Topic Override -->
+        <div class="custom-topic-section" id="custom-topic-section">
+            <div class="custom-topic-box" id="custom-topic-box">
+                <label class="custom-topic-label" id="custom-topic-label">🎯 Choose Your Own Topic</label>
+                <div class="custom-topic-input-row">
+                    <input type="text" id="custom-topic-input" class="custom-topic-input"
+                        placeholder="e.g. Design a Notification System">
+                    <button id="set-topic-btn" class="set-topic-btn">Set</button>
+                    <button id="clear-topic-btn" class="clear-topic-btn" style="display: none;">✕</button>
+                </div>
+            </div>
+        </div>
+
         <div class="timer-section">
             <div class="time-display" id="timer">30:00</div>
             <div class="controls">
@@ -101,6 +114,24 @@
             render();
         }
 
+        // --- Custom Topic Persistence ---
+        const CUSTOM_TOPIC_KEY = 'interview_prep_custom_topics';
+
+        function loadCustomTopics() {
+            const data = localStorage.getItem(CUSTOM_TOPIC_KEY);
+            return data ? JSON.parse(data) : {};
+        }
+
+        function saveCustomTopic(day, topic) {
+            const topics = loadCustomTopics();
+            if (topic) {
+                topics[day] = topic;
+            } else {
+                delete topics[day];
+            }
+            localStorage.setItem(CUSTOM_TOPIC_KEY, JSON.stringify(topics));
+        }
+
         // --- Render Updates ---
         function render() {
             const day = getDayNumber();
@@ -137,23 +168,66 @@
 
             typeLabel.textContent = task.type;
 
-            if (task.type === 'Coding') {
+            // Custom topic logic for both Coding and System Design days
+            const customSection = document.getElementById('custom-topic-section');
+            const customBox = document.getElementById('custom-topic-box');
+            const customLabel = document.getElementById('custom-topic-label');
+            const customInput = document.getElementById('custom-topic-input');
+            const setTopicBtn = document.getElementById('set-topic-btn');
+            const clearTopicBtn = document.getElementById('clear-topic-btn');
+            const customTopics = loadCustomTopics();
+            const customTopic = customTopics[day];
+
+            const isCoding = task.type === 'Coding';
+
+            if (isCoding) {
                 typeLabel.className = 'tag coding';
-                link.href = task.link;
-                link.textContent = task.title;
+                customBox.className = 'custom-topic-box coding-variant';
+                customLabel.textContent = '🎯 Choose Your Own Problem';
+                customInput.placeholder = 'e.g. Two Sum or paste LeetCode URL';
             } else {
                 typeLabel.className = 'tag system-design';
-                link.href = `https://www.google.com/search?q=${encodeURIComponent(task.title + " system design")}`;
-                link.textContent = task.title;
+                customBox.className = 'custom-topic-box';
+                customLabel.textContent = '🎯 Choose Your Own Topic';
+                customInput.placeholder = 'e.g. Design a Notification System';
+            }
+
+            if (customTopic) {
+                // Custom topic is set — show it
+                const isUrl = customTopic.startsWith('http');
+                if (isCoding) {
+                    link.href = isUrl ? customTopic : `https://leetcode.com/problemset/?search=${encodeURIComponent(customTopic)}`;
+                } else {
+                    link.href = `https://www.google.com/search?q=${encodeURIComponent(customTopic + " system design")}`;
+                }
+                link.textContent = isUrl ? customTopic.split('/').filter(Boolean).pop().replace(/-/g, ' ') : customTopic;
+                customInput.value = customTopic;
+                setTopicBtn.style.display = 'none';
+                clearTopicBtn.style.display = 'inline-flex';
+            } else {
+                // Default topic
+                if (isCoding) {
+                    link.href = task.link;
+                    link.textContent = task.title;
+                } else {
+                    link.href = `https://www.google.com/search?q=${encodeURIComponent(task.title + " system design")}`;
+                    link.textContent = task.title;
+                }
+                customInput.value = '';
+                setTopicBtn.style.display = 'inline-flex';
+                clearTopicBtn.style.display = 'none';
             }
 
             // AHA Logic - Hide by default
-            aha.textContent = task.aha;
+            if (customTopic) {
+                aha.textContent = 'You chose this one — go crush it!';
+            } else {
+                aha.textContent = task.aha;
+            }
             aha.style.display = 'none'; // Ensure hidden on re-render
 
             if (showHintBtn) {
                 showHintBtn.style.display = 'inline-block';
-                // Remove old event listeners to prevent duplicates (not strictly necessary with this structure but good practice)
                 const newBtn = showHintBtn.cloneNode(true);
                 showHintBtn.parentNode.replaceChild(newBtn, showHintBtn);
 
@@ -433,6 +507,28 @@
                 historyList.appendChild(li);
             }
         }
+
+        // --- Custom Topic Button Handlers ---
+        document.getElementById('set-topic-btn').addEventListener('click', () => {
+            const day = getDayNumber();
+            const input = document.getElementById('custom-topic-input').value.trim();
+            if (input) {
+                saveCustomTopic(day, input);
+                render();
+            }
+        });
+
+        document.getElementById('custom-topic-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('set-topic-btn').click();
+            }
+        });
+
+        document.getElementById('clear-topic-btn').addEventListener('click', () => {
+            const day = getDayNumber();
+            saveCustomTopic(day, null);
+            render();
+        });
 
         // Init
         checkTimerRecovery();
