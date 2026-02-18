@@ -21,9 +21,9 @@ body {
   font-family: var(--font-family);
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   padding: 20px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .container {
@@ -53,7 +53,6 @@ h1 {
   padding: 2rem;
   width: 100%;
   text-align: center;
-  backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   transition: transform 0.2s;
 }
@@ -201,7 +200,6 @@ h1 {
   border: 1px dashed rgba(235, 77, 255, 0.3);
   border-radius: 16px;
   padding: 1rem 1.2rem;
-  backdrop-filter: blur(10px);
 }
 
 .custom-topic-box.coding-variant {
