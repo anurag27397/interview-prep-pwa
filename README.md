@@ -26,7 +26,9 @@ The app syncs completion state across devices (e.g. Mac Safari ↔ iPhone Safari
 3. Enter the same sync code in the **☁️ Cloud Sync** section at the bottom
 4. Tap the **🔗 link button** — data merges and syncs in real-time
 
-> No login required. The sync code is stored in localStorage on each device.
+> **Current sync code: `MRNKC3`**
+>
+> No login required. The sync code is stored in localStorage on each device. Use the same code on all your devices to keep them in sync.
 
 ## Tech Stack
 
