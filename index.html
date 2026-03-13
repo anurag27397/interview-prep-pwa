@@ -460,9 +460,7 @@
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 localStorage.setItem('interview_prep_anchor', today.toISOString());
-                resetDayClicks = 0;
-                resetDayBtn.textContent = 'Reset Day Counter';
-                render();
+                location.reload();
             }
         });
 
