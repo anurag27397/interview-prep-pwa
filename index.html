@@ -437,7 +437,7 @@
         dataContainer.appendChild(importBtn);
         dataContainer.appendChild(importInput);
 
-        // --- Reset Day Button (10-press safety) ---
+        // --- Reset Day Button (10-press safety + day picker) ---
         let resetDayClicks = 0;
         let resetDayTimer = null;
 
@@ -457,9 +457,22 @@
                     resetDayBtn.textContent = 'Reset Day Counter';
                 }, 3000);
             } else {
+                resetDayClicks = 0;
+                resetDayBtn.textContent = 'Reset Day Counter';
+                const currentDay = getDayNumber();
+                const input = prompt(`Currently Day ${currentDay}.\nReset to which day? (1 - ${currentDay})`, '1');
+                if (input === null) return;
+                const targetDay = parseInt(input, 10);
+                if (isNaN(targetDay) || targetDay < 1 || targetDay > currentDay) {
+                    alert(`Enter a number between 1 and ${currentDay}`);
+                    return;
+                }
+                // Shift anchor so that today = targetDay
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                localStorage.setItem('interview_prep_anchor', today.toISOString());
+                const daysBack = targetDay - 1;
+                const newAnchor = new Date(today.getTime() - daysBack * 86400000);
+                localStorage.setItem('interview_prep_anchor', newAnchor.toISOString());
                 location.reload();
             }
         });
