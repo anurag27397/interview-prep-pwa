@@ -16,6 +16,7 @@ A minimal, dark-themed Progressive Web App for daily interview preparation. Alte
 - **☁️ Cloud Sync** — Firebase Realtime Database sync across devices using a 6-character code
 - **Offline Support** — Service worker caches assets; falls back to localStorage when offline
 - **Export / Import** — Backup and restore your progress as JSON
+- **Reset Day Counter** — Reset to Day 1 or any previous day (10-tap safety to prevent accidental resets)
 
 ## Cloud Sync Setup
 
@@ -52,6 +53,17 @@ InterviewPrepApp/
 ├── manifest.json       # PWA manifest
 └── icons/              # App icons
 ```
+
+## Reset Day Counter
+
+The app tracks which day you're on based on an anchor date. To reset:
+
+1. Scroll to the bottom and find the **Reset Day Counter** button
+2. Tap it **10 times** (safety mechanism to prevent accidental resets)
+3. A prompt appears asking which day to reset to (e.g. enter `1` for Day 1, or `6` to go back to Day 6)
+4. The page reloads with the new day
+
+The anchor date is stored in `localStorage` (`interview_prep_anchor`). Clearing browser data will revert to the hardcoded default anchor.
 
 ## Local Development
 
