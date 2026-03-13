@@ -84,8 +84,10 @@
         const ANCHOR_DATE = new Date('2026-03-08T00:00:00');
 
         function getDayNumber() {
+            const saved = localStorage.getItem('interview_prep_anchor');
+            const anchor = saved ? new Date(saved) : ANCHOR_DATE;
             const now = new Date();
-            const diffTime = Math.abs(now - ANCHOR_DATE);
+            const diffTime = Math.abs(now - anchor);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays > 0 ? diffDays : 1;
         }
@@ -433,9 +435,38 @@
         dataContainer.appendChild(importBtn);
         dataContainer.appendChild(importInput);
 
-        actionWrapper.appendChild(markDoneBtn);
-        actionWrapper.appendChild(dataContainer);
+        // --- Reset Day Button (10-press safety) ---
+        let resetDayClicks = 0;
+        let resetDayTimer = null;
 
+        const resetDayBtn = document.createElement('button');
+        resetDayBtn.textContent = 'Reset Day Counter';
+        resetDayBtn.style.cssText = btnStyle;
+
+        resetDayBtn.addEventListener('click', () => {
+            resetDayClicks++;
+            const remaining = 10 - resetDayClicks;
+
+            if (remaining > 0) {
+                resetDayBtn.textContent = `Tap ${remaining} more to reset`;
+                clearTimeout(resetDayTimer);
+                resetDayTimer = setTimeout(() => {
+                    resetDayClicks = 0;
+                    resetDayBtn.textContent = 'Reset Day Counter';
+                }, 3000);
+            } else {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                localStorage.setItem('interview_prep_anchor', today.toISOString());
+                resetDayClicks = 0;
+                resetDayBtn.textContent = 'Reset Day Counter';
+                render();
+            }
+        });
+
+        dataContainer.appendChild(resetDayBtn);
+
+        actionWrapper.appendChild(markDoneBtn);
         actionWrapper.appendChild(dataContainer);
 
         // Insert wrapper before footer text
