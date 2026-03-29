@@ -202,6 +202,8 @@
                 const isUrl = customTopic.startsWith('http');
                 if (isCoding) {
                     link.href = isUrl ? customTopic : `https://leetcode.com/problemset/?search=${encodeURIComponent(customTopic)}`;
+                } else if (isCaseStudy) {
+                    link.href = isUrl ? customTopic : `https://www.google.com/search?q=${encodeURIComponent(customTopic + " engineering blog")}`;
                 } else {
                     link.href = `https://www.google.com/search?q=${encodeURIComponent(customTopic + " system design")}`;
                 }
@@ -213,6 +215,9 @@
                 // Default topic
                 if (isCoding) {
                     link.href = task.link;
+                    link.textContent = task.title;
+                } else if (isCaseStudy) {
+                    link.href = `https://www.google.com/search?q=${encodeURIComponent(task.title + " engineering case study")}`;
                     link.textContent = task.title;
                 } else {
                     link.href = `https://www.google.com/search?q=${encodeURIComponent(task.title + " system design")}`;

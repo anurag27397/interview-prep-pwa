@@ -95,4 +95,19 @@ export const systemDesignTopics = [
   { title: "Distributed Counters", aha: "Sharded counters for high write throughput.", type: "System Design", phase: 3 },
   { title: "Design Typeahead Suggestions", aha: "Trie structure, Top-k caching.", type: "System Design", phase: 3 },
   { title: "Design Near-By Friends (Location)", aha: "Quadtrees, Geohashing.", type: "System Design", phase: 3 },
+
+  // Phase 4: Real-World Case Studies
+  { title: "OpenAI: 800M Users on One Postgres", aha: "Vertical scaling + PgBouncer + read replicas beat premature sharding. Simplicity wins.", type: "System Design", phase: 4 },
+  { title: "The 45ms Myth: Redis Made It Worse", aha: "Adding a cache turned 45ms into 92ms. Root cause was missing DB indexes. Profile before you cache.", type: "System Design", phase: 4 },
+  { title: "Slack: Scaling MySQL with Vitess", aha: "Vitess (VTGate + VTTablet) provides transparent horizontal sharding without app-level changes.", type: "System Design", phase: 4 },
+  { title: "Ghost Migration: Zero-Downtime Schema Change", aha: "Shadow table + binlog sync + backfill + atomic rename. Tools: gh-ost, pt-online-schema-change.", type: "System Design", phase: 4 },
+  { title: "Backpressure: Fast Producer, Slow Consumer", aha: "Return HTTP 429, use DLQ for overflow, throttle at 80% queue capacity. Don't just add a bigger queue.", type: "System Design", phase: 4 },
+  { title: "Saga Pattern: Distributed Rollbacks", aha: "No ACID across microservices. Compensating transactions: OrderCreated → StockFailed → CancelOrder.", type: "System Design", phase: 4 },
+  { title: "BFF Pattern: Death by 1000 Microservices", aha: "API Gateway fans out to 10 services in parallel, stitches one response. 1 round trip for the client.", type: "System Design", phase: 4 },
+  { title: "Flash Sale: Atomic Decrements Beat Locks", aha: "Don't read-modify-write. UPDATE stock = stock - 1 WHERE stock > 0. Or Redis DECR (single-threaded = atomic).", type: "System Design", phase: 4 },
+  { title: "Circuit Breaker: Stopping Cascading Failures", aha: "Service B slow → A's threads pile up → A crashes → domino. Open circuit after N failures, fail fast.", type: "System Design", phase: 4 },
+  { title: "Leaderboard: Redis Sorted Sets vs SQL", aha: "Don't ORDER BY on 10M rows. Redis ZSET keeps elements sorted on insert. ZREVRANGE 0 99 = instant.", type: "System Design", phase: 4 },
+  { title: "Idempotency Keys: Preventing Double Payments", aha: "UUID per transaction, INSERT into ProcessedTransactions first, skip on duplicate key error.", type: "System Design", phase: 4 },
+  { title: "Cache-Aside & TTL: Fixing Stale Data", aha: "Read: Cache miss → DB → fill cache. Write: Update DB → DELETE cache. TTL = auto-heal in 5 min.", type: "System Design", phase: 4 },
+  { title: "Metrics Over Logs: 5TB/day Fix", aha: "Use counters (payment_success.inc()) not log lines. Log only failures. Sample 1% of success.", type: "System Design", phase: 4 },
 ];
